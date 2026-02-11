@@ -1,8 +1,3 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
   branches:
     include:
@@ -11,19 +6,39 @@ trigger:
 pool:
   name: self-hosted
 
+variables:
+  azureSubscription: 'ARM Service Connect'
+  appName: 'restaurant'
+
 steps:
 - checkout: self
 
-- task: CopyFiles@2
-  displayName: 'Copy files to staging'
+# Install Node (optional but recommended)
+- task: NodeTool@0
   inputs:
-    SourceFolder: '$(Build.SourcesDirectory)'
-    Contents: '**'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    versionSpec: '18.x'
+  displayName: 'Install Node.js'
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact'
+# Install dependencies
+- script: |
+    npm install
+  displayName: 'Install Dependencies'
+
+# Archive files into zip
+- task: ArchiveFiles@2
+  displayName: 'Archive files'
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'static-website'
-    publishLocation: 'Container'
+    rootFolderOrFile: '$(Build.SourcesDirectory)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
+    replaceExistingArchive: true
+
+# Deploy to Azure App Service (Linux)
+- task: AzureWebApp@1
+  displayName: 'Deploy to Azure App Service'
+  inputs:
+    azureSubscription: '$(azureSubscription)'
+    appType: 'webAppLinux'
+    appName: '$(appName)'
+    package: '$(Build.ArtifactStagingDirectory)/app.zip'
