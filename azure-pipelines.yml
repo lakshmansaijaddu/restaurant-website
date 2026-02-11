@@ -4,7 +4,7 @@ trigger:
       - main
 
 pool:
-  name: self-hosted
+  name: selfhosted
 
 variables:
   azureSubscription: 'ARM Service Connect'
@@ -34,11 +34,11 @@ steps:
     archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
     replaceExistingArchive: true
 
-# Deploy to Azure App Service (Linux)
-- task: AzureWebApp@1
-  displayName: 'Deploy to Azure App Service'
-  inputs:
-    azureSubscription: '$(azureSubscription)'
-    appType: 'webAppLinux'
-    appName: '$(appName)'
-    package: '$(Build.ArtifactStagingDirectory)/app.zip'
+# # Deploy to Azure App Service (Linux)
+# - task: AzureWebApp@1
+#   displayName: 'Deploy to Azure App Service'
+#   inputs:
+#     azureSubscription: '$(azureSubscription)'
+#     appType: 'webAppLinux'
+#     appName: '$(appName)'
+#     package: '$(Build.ArtifactStagingDirectory)/app.zip'
