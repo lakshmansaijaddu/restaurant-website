@@ -5,40 +5,43 @@ trigger:
 
 pool:
   name: selfhosted
-
+  
 variables:
-  azureSubscription: 'ARM Service Connect'
-  appName: 'restaurant'
+  nodeVersion: '18.x'
 
 steps:
 - checkout: self
 
-# Install Node (optional but recommended)
+# Install Node
 - task: NodeTool@0
   inputs:
-    versionSpec: '18.x'
+    versionSpec: '$(nodeVersion)'
   displayName: 'Install Node.js'
 
 # Install dependencies
-- script: |
-    npm install
-  displayName: 'Install Dependencies'
+- script: npm install
+  displayName: 'Install dependencies'
 
-# Archive files into zip
-- task: ArchiveFiles@2
-  displayName: 'Archive files'
+# Security scan (optional but recommended for DevSecOps)
+- script: npm audit --audit-level=high
+  displayName: 'Run npm audit'
+
+# Build project
+- script: npm run build
+  displayName: 'Build project'
+
+# Copy build output (dist or build folder)
+- task: CopyFiles@2
   inputs:
-    rootFolderOrFile: '$(Build.SourcesDirectory)'
-    includeRootFolder: false
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
-    replaceExistingArchive: true
+    SourceFolder: '$(Build.SourcesDirectory)/dist'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+  displayName: 'Copy build output'
 
-# # Deploy to Azure App Service (Linux)
-# - task: AzureWebApp@1
-#   displayName: 'Deploy to Azure App Service'
-#   inputs:
-#     azureSubscription: '$(azureSubscription)'
-#     appType: 'webAppLinux'
-#     appName: '$(appName)'
-#     package: '$(Build.ArtifactStagingDirectory)/app.zip'
+# Publish artifact
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'web-build'
+    publishLocation: 'Container'
+  displayName: 'Publish Artifact'
