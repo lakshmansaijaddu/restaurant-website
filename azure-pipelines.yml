@@ -22,26 +22,24 @@ steps:
 - script: npm install
   displayName: 'Install dependencies'
 
-# Security scan (optional but recommended for DevSecOps)
+# Security scan
 - script: npm audit --audit-level=high
   displayName: 'Run npm audit'
 
-# Build project
-- script: npm run build
-  displayName: 'Build project'
-
-# Copy build output (dist or build folder)
-- task: CopyFiles@2
+# Archive entire project
+- task: ArchiveFiles@2
+  displayName: 'Archive project'
   inputs:
-    SourceFolder: '$(Build.SourcesDirectory)/dist'
-    Contents: '**'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-  displayName: 'Copy build output'
+    rootFolderOrFile: '$(Build.SourcesDirectory)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
+    replaceExistingArchive: true
 
 # Publish artifact
 - task: PublishBuildArtifacts@1
   inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/app.zip'
     ArtifactName: 'web-build'
     publishLocation: 'Container'
   displayName: 'Publish Artifact'
