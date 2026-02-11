@@ -34,10 +34,14 @@ steps:
     archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
     replaceExistingArchive: true
 
-- task: PublishPipelineArtifact@1
+- task: PublishBuildArtifacts@1
   inputs:
-    targetPath: '$(Pipeline.Workspace)'
-    publishLocation: 'pipeline'
+    PathtoPublish: "$(Build.ArtifactStagingDirectory)/artifact_web"
+    ArtifactName: "web-build"
+    publishLocation: "Container"
+  displayName: "Publish Web Build Artifact"
+
+    
     
 # # Deploy to Azure App Service (Linux)
 # - task: AzureWebApp@1
